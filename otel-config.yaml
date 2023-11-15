@@ -1,0 +1,26 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+
+processors:
+  batch:
+
+extensions:
+  basicauth/client:
+  client_auth:
+    username: admin
+    password: admin
+
+exporters:
+  otlphttp:
+    traces_endpoint: "data-prepper:4900/v1/traces"
+    auth:
+      authenticator: basicauth/client
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp]

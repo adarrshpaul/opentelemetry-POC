@@ -1,0 +1,51 @@
+version: '3'
+services:
+  opensearch:
+    image: opensearchproject/opensearch:latest
+    environment:
+      - discovery.type=single-node
+    networks:
+      - mynetwork
+    ports:
+      - "9200:9200"
+    expose:
+      - "9200"
+
+  # opensearch-dashboards:
+  #   image: opensearchproject/opensearch-dashboards:latest
+  #   environment:
+  #     - OPENSEARCH_HOSTS="https://opensearch:9200"
+  #   networks:
+  #     - mynetwork
+  #   ports:
+  #     - "5601:5601"
+  #   depends_on:
+  #     - opensearch
+
+  data-prepper:
+    image: opensearchproject/data-prepper:latest
+    ports:
+      - "4900:4900"
+    volumes:
+      - ./pipelines:/usr/share/data-prepper/pipelines
+      - ./config/data-prepper-config.yaml:/usr/share/data-prepper/config/data-prepper-config.yaml
+    environment:
+      PIPELINE_FILE: pipelines/otel-pipeline.yaml
+    depends_on:
+      - opensearch
+    networks:
+      - mynetwork
+
+  # otel-collector:
+  #   image: otel/opentelemetry-collector:latest
+  #   volumes:
+  #     - ./otel-config.yaml:/etc/otel/config.yaml
+  #   networks:
+  #     - mynetwork
+  #   ports:
+  #     - "4317:4317"
+  #     - "4318:4318"
+      
+networks:
+  mynetwork:
+    driver: bridge
